@@ -130,14 +130,9 @@ def plot_learning_curve(
     axes[0].plot(
         train_sizes, train_scores_mean, "o-", color="r", label="Training score"
     )
-    if cv == None:
-        axes[0].plot(
-            train_sizes, test_scores_mean, "o-", color="b", label="Testing score"
-        )
-    else:
-        axes[0].plot(
-            train_sizes, test_scores_mean, "o-", color="b", label="Cross-validation score"
-        )
+
+    axes[0].plot(train_sizes, test_scores_mean, "o-", color="b", label="Cross-validation score")
+
     axes[0].legend(loc="best")
 
     # Plot n_samples vs fit_times

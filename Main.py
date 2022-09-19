@@ -21,7 +21,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # Read the data************************************************
-df1 = pd.read_csv('data1.csv', index_col=0, header=0)
+df1 = pd.read_csv('data2.csv', index_col=0, header=0)
 df1.replace([np.inf, -np.inf], np.nan, inplace=True)
 df1.dropna(inplace=True)
 pd.set_option('display.max_rows', None)
@@ -32,7 +32,8 @@ x = df1.iloc[:,:-1]
 y = df1.iloc[:,-1]
 x = preprocessing.OneHotEncoder().fit_transform(x).toarray()
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=4)
-cv = ShuffleSplit(n_splits=8, test_size=0.2, random_state=0)
+cv = ShuffleSplit(n_splits=3
+                  , test_size=0.2, random_state=0)
 
 # #Deceision tree *********************************************
 # *************************************************************
@@ -41,7 +42,7 @@ cv = ShuffleSplit(n_splits=8, test_size=0.2, random_state=0)
 
 # Max depth dependency graphs**********************************
 #
-max_depth_list = range(1,10)
+max_depth_list = range(1,20)
 train_errors = []
 test_errors = []
 
@@ -62,7 +63,7 @@ for i in max_depth_list:
     test_errors.append(metrics.accuracy_score(y_test, pred_test))
     train_errors1.append(metrics.accuracy_score(y_train, pred_train1))
     test_errors1.append(metrics.accuracy_score(y_test, pred_test1))
-j = range(1,10)
+j = range(1,20)
 plt.plot(j, train_errors, label='Training Accuracy - Gini')
 plt.plot(j, test_errors, label='Testing Accuracy - Gini')
 plt.plot(j, train_errors1, label='Training Accuracy - Entropy')
@@ -75,7 +76,7 @@ plt.clf()
 plt.close('images/DT_Accuracy_max depth.png')
 
 # Min leaf dependency graph ********************************************
-min_leaf_list = range(1,10)
+min_leaf_list = range(1,20)
 train_errors = []
 test_errors = []
 
@@ -97,7 +98,7 @@ for i in min_leaf_list:
     train_errors1.append(metrics.accuracy_score(y_train, pred_train1))
     test_errors1.append(metrics.accuracy_score(y_test, pred_test1))
 
-j = range(1,10)
+j = range(1,20)
 plt.plot(j, train_errors, label='Training Accuracy - Gini')
 plt.plot(j, test_errors, label='Testing Accuracy - Gini')
 plt.plot(j, train_errors1, label='Training Accuracy - Entropy')
@@ -113,12 +114,16 @@ plt.close('images/DT_Accuracy_min leaf.png')
 # Learning curves ***********************************
 
 clf = DecisionTreeClassifier(max_depth =6, criterion="entropy" )
+plot_learning_curves(x_train,y_train,x_test,y_test,clf,scoring="accuracy")
+plt.savefig('images/DT_Learning_curve_entropy_withoutcv.png')
+plt.clf()
+plt.close('images/DT_Learning_curve_entropy_withoutcv.png')
 plot_learning_curve(
    clf,
     "Learning curve DT with entropy",
     x,
     y,
-    
+    cv=cv,
     n_jobs=4,
     scoring="accuracy",
 )
@@ -127,16 +132,16 @@ plot_learning_curve(
 plt.savefig('images/DT_Learning_curve_entropy.png')
 plt.clf()
 plt.close('images/DT_Learning_curve_entropy.png')
+
+
 t0 = time.time()
-
-
 clf = DecisionTreeClassifier(max_depth =6, criterion="gini" )
 plot_learning_curve(
    clf,
     "Learning curve DT with entropy",
     x,
     y,
-    
+    cv=cv,
     n_jobs=4,
     scoring="accuracy",
 )
@@ -144,6 +149,10 @@ print("DT learning curve : ", time.time()-t0)
 plt.savefig('images/DT_Learning_curve_gini.png')
 plt.clf()
 plt.close('images/DT_Learning_curve_gini.png')
+plot_learning_curves(x_train,y_train,x_test,y_test,clf,scoring="accuracy")
+plt.savefig('images/DT_Learning_curve_gini_withoutcv.png')
+plt.clf()
+plt.close('images/DT_Learning_curve_gini_withoutcv.png')
 
 # Post pruning **********************************
 path = clf.cost_complexity_pruning_path(x_train,y_train)
@@ -173,17 +182,19 @@ plt.ylabel('Accuracy')
 plt.savefig('images/DT_pruning.png')
 plt.clf()
 plt.close('images/DT_pruning.png')
+
 # #Neural networks - MLP *********************************************
 # *************************************************************
 # *************************************************************
 t0 = time.time()
 clf = MLPClassifier(solver='sgd', hidden_layer_sizes =(3,5), random_state=34, activation='relu')
+
 plot_learning_curve(
    clf,
     "Learning curve NLP - hidden layer (3,5) and activation function relu",
     x,
     y,
-    
+    cv=cv,
     n_jobs=4,
     scoring="accuracy",
 )
@@ -191,6 +202,10 @@ print("MLP learning curve : ", time.time()-t0)
 plt.savefig('images/MLP_Learning_curve_35_relu.png')
 plt.clf()
 plt.close('images/MLP_Learning_curve_35_relu.png')
+plot_learning_curves(x_train,y_train,x_test,y_test,clf,scoring="accuracy")
+plt.savefig('images/MLP_Learning_curve_35_relu_withoutcv.png')
+plt.clf()
+plt.close('images/MLP_Learning_curve_35_relu_withoutcv.png')
 
 clf = MLPClassifier(solver='sgd', hidden_layer_sizes =(3,5,3), random_state=34, activation='relu')
 plot_learning_curve(
@@ -198,7 +213,7 @@ plot_learning_curve(
     "Learning curve NLP - hidden layer (3,5,3) and activation function relu",
     x,
     y,
-    
+    cv=cv,
     n_jobs=4,
     scoring="accuracy",
 )
@@ -212,7 +227,7 @@ plot_learning_curve(
     "Learning curve NLP - hidden layer (3,5) and activation function identity",
     x,
     y,
-    
+    cv=cv,
     n_jobs=4,
     scoring="accuracy",
 )
@@ -251,7 +266,7 @@ plot_learning_curve(
     "Learning curve Gradient booster - criterion squared error",
     x,
     y,
-    
+    cv=cv,
     n_jobs=4,
     scoring="accuracy",
 )
@@ -259,6 +274,10 @@ print("Gradient learning curve : ", time.time()-t0)
 plt.savefig('images/Boosting_Learning_curve.png')
 plt.clf()
 plt.close('images/Boosting_Learning_curve.png')
+plot_learning_curves(x_train,y_train,x_test,y_test,clf,scoring="accuracy")
+plt.savefig('images/Boosting_Learning_curve_withoutcv.png')
+plt.clf()
+plt.close('images/Boosting_Learning_curve_withoutcv.png')
 
 # Post pruning for boosting**********************************
 clf = DecisionTreeClassifier(max_depth =6, criterion="gini" )
@@ -301,7 +320,7 @@ plot_learning_curve(
     "SVM learning curve- kernel = poly",
     x,
     y,
-    
+    cv=cv,
     n_jobs=4,
     scoring="accuracy",
 )
@@ -315,7 +334,7 @@ plot_learning_curve(
     "SVM learning curve- kernel = rbf",
     x,
     y,
-    
+    cv=cv,
     n_jobs=4,
     scoring="accuracy",
 )
@@ -323,6 +342,10 @@ print("SVM - rbf learning curve : ", time.time()-t0)
 plt.savefig('images/SVM_Learning_curve_rbf.png')
 plt.clf()
 plt.close('images/SVM_Learning_curve_rbf.png')
+plot_learning_curves(x_train,y_train,x_test,y_test,clf,scoring="accuracy")
+plt.savefig('images/SVM_withoutcv.png')
+plt.clf()
+plt.close('images/SVM_withoutcv.png')
 
 # #KNN ********************************************************
 # *************************************************************
@@ -357,7 +380,7 @@ plot_learning_curve(
     "KNN learning curve with 7 neighbors",
     x,
     y,
-    
+    cv=cv,
     n_jobs=4,
     scoring="accuracy",
 )
@@ -366,4 +389,7 @@ plt.savefig('images/KNN_Learning_curve_7.png')
 plt.clf()
 plt.close('images/KNN_Learning_curve_7.png')
 
-
+plot_learning_curves(x_train,y_train,x_test,y_test,clf,scoring="accuracy")
+plt.savefig('images/KNN_withoutcv.png')
+plt.clf()
+plt.close('images/KNN_withoutcv.png')
