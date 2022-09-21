@@ -21,7 +21,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # Read the data************************************************
-df1 = pd.read_csv('data2.csv', index_col=0, header=0)
+df1 = pd.read_csv('data1.csv', index_col=0, header=0)
 df1.replace([np.inf, -np.inf], np.nan, inplace=True)
 df1.dropna(inplace=True)
 pd.set_option('display.max_rows', None)
@@ -335,7 +335,7 @@ plot_learning_curve(
     x,
     y,
     cv=cv,
-    n_jobs=4,
+    n_jobs=1,
     scoring="accuracy",
 )
 print("SVM - rbf learning curve : ", time.time()-t0)
